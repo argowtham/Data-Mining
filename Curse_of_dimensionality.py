@@ -27,6 +27,7 @@ if __name__ == '__main__':
             r_array.append(numpy.log10((dmax - dmin)/dmin))
         plt.plot(r_array)
         plt.ylabel("r(k) as a function of k")
+        plt.legend(["100 data points", "1000 data points"])
         n *= 10
         print("Increasing n by 10 folds. New n = ", n)
     plt.show()
