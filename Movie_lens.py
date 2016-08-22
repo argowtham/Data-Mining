@@ -1,23 +1,37 @@
 import pandas
+import numpy
+import operator
 
 if __name__ == '__main__':
     mv_lens_data = pandas.read_table(open("ml-100k/u.data", 'r'))
-    # mv_user_data = pandas.read_csv("ml-100k/u.user", sep='|', header=None, index_col=0)
-    # for i in range(0, len(mv_user_data)):
-    #     print(mv_user_data.loc[i])
-    for i in range(0, 1):
-        row = mv_lens_data.loc[i]
-        seen_movies, unseen_movies, compare_data = [row[1]], [], []
-        for j in range(0, len(mv_lens_data)):
-            if row[0] == mv_lens_data.loc[j][0]:
-                seen_movies.append(mv_lens_data.loc[j][1])
-        seen_movies = list(set(seen_movies))
+    mv_lens_mod = pandas.DataFrame(data=list(set(mv_lens_data['user id'])), columns=['user id'])
 
-        for k in range(1, 1683):
-            if k not in seen_movies:
-                unseen_movies.append(k)
+    for item_id in range(1, 1683):
+        mv_lens_mod[item_id] = 0
+    for row in mv_lens_data.iterrows():
+        mv_lens_mod[row[1][1]][row[1][0]] = row[1][2]
+    # print(mv_lens_mod)
 
-        for l in range(0, len(mv_lens_data)):
-            if unseen_movies[0] == mv_lens_data.loc[l][1]:
-                compare_data.append(mv_lens_data.loc[l])
-        compare_data = pandas.DataFrame(compare_data)
+    for u_id in range(0, 943):
+        for item_id in range(1, 1683):
+            if mv_lens_mod.loc[u_id][item_id] == 0:
+                user_list, distance, tot_rating = [], {}, 0
+                for j in range(0, 943):
+                    if not mv_lens_mod.loc[j][item_id] == 0:
+                        user_list.append(mv_lens_mod.loc[j]['user id'])
+                for user in user_list:
+                    distance[user] = (numpy.linalg.norm(mv_lens_mod.loc[u_id] - mv_lens_mod.loc[user-1]))
+
+                sorted_distance = sorted(distance.items(), key=operator.itemgetter(1))
+                if len(sorted_distance) > 10:
+                    for user in range(0, 10):
+                        user_id = sorted_distance[user][0]
+                        tot_rating += mv_lens_mod.loc[user_id-1][item_id]
+                    predicted_rating = tot_rating // 10
+                else:
+                    for user in range(0, len(sorted_distance)):
+                        user_id = sorted_distance[user][0]
+                        tot_rating += mv_lens_mod.loc[user_id-1][item_id]
+                    predicted_rating = tot_rating // len(sorted_distance)
+                mv_lens_mod.loc[u_id][item_id] = predicted_rating
+    print(mv_lens_mod)
