@@ -3,7 +3,7 @@ import numpy
 import operator
 
 if __name__ == '__main__':
-    mv_lens_data = pandas.read_table(open("ml-100k/u.data", 'r'))
+    mv_lens_data = pandas.read_table(open("u.data", 'r'))
     mv_lens_mod = pandas.DataFrame(data=list(set(mv_lens_data['user id'])), columns=['user id'])
 
     for item_id in range(1, 1683):
@@ -28,10 +28,16 @@ if __name__ == '__main__':
                         user_id = sorted_distance[user][0]
                         tot_rating += mv_lens_mod.loc[user_id-1][item_id]
                     predicted_rating = tot_rating // 10
-                else:
+                elif not len(sorted_distance) == 0:
                     for user in range(0, len(sorted_distance)):
                         user_id = sorted_distance[user][0]
                         tot_rating += mv_lens_mod.loc[user_id-1][item_id]
                     predicted_rating = tot_rating // len(sorted_distance)
+                else:
+                    predicted_rating = -1
                 mv_lens_mod.loc[u_id][item_id] = predicted_rating
-    print(mv_lens_mod)
+                # print(predicted_rating)
+    out_file = open("out.txt", 'w')
+    print(mv_lens_mod) >> out_file
+    out_file.close()
+
